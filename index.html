@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#4f46e5" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Magyar Szavak" />
+  <title>Magyar Szavak</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary: #4f46e5;
+      --primary-light: #ede9fe;
+      --primary-dark: #3730a3;
+      --bg: #f8f7ff;
+      --card-bg: #ffffff;
+      --text: #1e1b4b;
+      --text-muted: #6b7280;
+      --border: #e5e7eb;
+      --success: #10b981;
+      --danger: #ef4444;
+      --radius: 16px;
+      --shadow: 0 4px 24px rgba(79,70,229,0.10);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 0 40px;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    header {
+      width: 100%;
+      background: var(--primary);
+      color: white;
+      padding: 18px 20px 14px;
+      text-align: center;
+    }
+    header h1 { font-size: 20px; font-weight: 700; letter-spacing: 0.5px; }
+    header p { font-size: 12px; opacity: 0.8; margin-top: 2px; }
+
+    .screen { width: 100%; max-width: 480px; padding: 20px 16px; }
+
+    /* CATEGORY SCREEN */
+    .category-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .cat-btn {
+      background: var(--card-bg);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 12px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+      box-shadow: var(--shadow);
+    }
+    .cat-btn:active { transform: scale(0.97); }
+    .cat-btn .cat-icon { font-size: 32px; display: block; margin-bottom: 6px; }
+    .cat-btn .cat-name { font-size: 13px; font-weight: 600; color: var(--text); }
+    .cat-btn .cat-count { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .cat-btn.selected { border-color: var(--primary); background: var(--primary-light); }
+
+    .all-btn {
+      grid-column: span 2;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      padding: 16px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-bottom: 4px;
+    }
+    .all-btn:active { opacity: 0.9; transform: scale(0.98); }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 12px;
+    }
+
+    /* FLASHCARD SCREEN */
+    .progress-bar-wrap {
+      background: var(--border);
+      border-radius: 99px;
+      height: 6px;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--primary);
+      border-radius: 99px;
+      transition: width 0.3s;
+    }
+
+    .progress-text {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .card-wrap {
+      perspective: 1000px;
+      height: 240px;
+      margin: 8px 0 20px;
+      cursor: pointer;
+    }
+
+    .card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .card-inner.flipped { transform: rotateY(180deg); }
+
+    .card-face {
+      position: absolute;
+      inset: 0;
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      padding: 24px;
+      border: 1.5px solid var(--border);
+    }
+
+    .card-face.back {
+      transform: rotateY(180deg);
+      background: var(--primary-light);
+      border-color: var(--primary);
+    }
+
+    .card-lang {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+    .card-face.back .card-lang { color: var(--primary); }
+
+    .card-word {
+      font-size: 28px;
+      font-weight: 700;
+      text-align: center;
+      color: var(--text);
+      line-height: 1.2;
+    }
+    .card-face.back .card-word { color: var(--primary-dark); }
+
+    .card-hint {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    .tap-hint {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .answer-btns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .answer-btns.hidden { opacity: 0; pointer-events: none; }
+
+    .btn-wrong {
+      background: #fef2f2;
+      border: 1.5px solid #fca5a5;
+      color: var(--danger);
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-correct {
+      background: #f0fdf4;
+      border: 1.5px solid #86efac;
+      color: var(--success);
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-wrong:active { transform: scale(0.97); }
+    .btn-correct:active { transform: scale(0.97); }
+
+    .nav-btns {
+      display: flex;
+      gap: 10px;
+    }
+    .btn-secondary {
+      flex: 1;
+      background: white;
+      border: 1.5px solid var(--border);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-primary {
+      flex: 1;
+      background: var(--primary);
+      border: none;
+      color: white;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* RESULT SCREEN */
+    .result-card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1.5px solid var(--border);
+      padding: 32px 24px;
+      text-align: center;
+      margin-top: 16px;
+    }
+    .result-emoji { font-size: 56px; margin-bottom: 12px; }
+    .result-title { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+    .result-sub { font-size: 14px; color: var(--text-muted); margin-bottom: 24px; }
+    .result-score {
+      font-size: 48px;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 4px;
+    }
+    .result-score-label { font-size: 13px; color: var(--text-muted); margin-bottom: 28px; }
+    .result-btns { display: flex; flex-direction: column; gap: 10px; }
+    .result-btns .btn-primary, .result-btns .btn-secondary {
+      flex: none;
+      padding: 14px;
+      font-size: 15px;
+    }
+
+    /* Utility */
+    .hidden { display: none !important; }
+    .badge {
+      display: inline-block;
+      background: var(--primary-light);
+      color: var(--primary);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 99px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Magyar Szavak 🇭🇺→🇫🇷</h1>
+  <p>Entraînez-vous au vocabulaire hongrois</p>
+</header>
+
+<!-- CATEGORY SCREEN -->
+<div class="screen" id="screen-categories">
+  <p class="section-title">Choisir une catégorie</p>
+  <div class="category-grid" id="category-grid">
+    <button class="all-btn" onclick="startSession('all')">🎲 Tout mélanger</button>
+  </div>
+</div>
+
+<!-- FLASHCARD SCREEN -->
+<div class="screen hidden" id="screen-card">
+  <div class="progress-text">
+    <span id="progress-label">Carte 1 / 10</span>
+    <span id="score-label">✅ 0 &nbsp; ❌ 0</span>
+  </div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progress-bar" style="width:0%"></div>
+  </div>
+
+  <div class="badge" id="session-category-badge">Boulangerie</div>
+
+  <div class="card-wrap" id="card-wrap" onclick="flipCard()">
+    <div class="card-inner" id="card-inner">
+      <div class="card-face front">
+        <div class="card-lang">🇭🇺 Hongrois</div>
+        <div class="card-word" id="card-hu">kenyér</div>
+        <div class="card-hint">Appuyez pour retourner</div>
+      </div>
+      <div class="card-face back">
+        <div class="card-lang">🇫🇷 Français</div>
+        <div class="card-word" id="card-fr">pain</div>
+      </div>
+    </div>
+  </div>
+
+  <p class="tap-hint" id="tap-hint">👆 Appuyez sur la carte pour voir la réponse</p>
+
+  <div class="answer-btns hidden" id="answer-btns">
+    <button class="btn-wrong" onclick="answer(false)">❌ Je ne savais pas</button>
+    <button class="btn-correct" onclick="answer(true)">✅ Je savais !</button>
+  </div>
+
+  <div class="nav-btns">
+    <button class="btn-secondary" onclick="goHome()">🏠 Accueil</button>
+    <button class="btn-primary" id="btn-next" onclick="nextCard()" disabled>Suivante →</button>
+  </div>
+</div>
+
+<!-- RESULT SCREEN -->
+<div class="screen hidden" id="screen-result">
+  <div class="result-card">
+    <div class="result-emoji" id="result-emoji">🎉</div>
+    <div class="result-title" id="result-title">Session terminée !</div>
+    <div class="result-sub" id="result-sub">Voici vos résultats</div>
+    <div class="result-score" id="result-score">8/10</div>
+    <div class="result-score-label">bonnes réponses</div>
+    <div class="result-btns">
+      <button class="btn-primary" onclick="retrySession()">🔁 Réessayer cette session</button>
+      <button class="btn-secondary" onclick="goHome()">🏠 Choisir une autre catégorie</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const VOCAB = {
+  boulangerie: {
+    icon: "🥖",
+    label: "Boulangerie",
+    words: [
+      { hu: "kenyér", fr: "pain" },
+      { hu: "sütemény", fr: "gâteau" },
+      { hu: "croissant", fr: "croissant" },
+      { hu: "zsemle", fr: "petit pain" },
+      { hu: "liszt", fr: "farine" },
+      { hu: "élesztő", fr: "levure" },
+      { hu: "vaj", fr: "beurre" },
+      { hu: "cukor", fr: "sucre" },
+      { hu: "tojás", fr: "œuf" },
+      { hu: "pékség", fr: "boulangerie" },
+      { hu: "pirítós", fr: "toast" },
+      { hu: "bagel", fr: "bagel" },
+    ]
+  },
+  jardin: {
+    icon: "🌱",
+    label: "Jardin",
+    words: [
+      { hu: "kert", fr: "jardin" },
+      { hu: "virág", fr: "fleur" },
+      { hu: "fa", fr: "arbre" },
+      { hu: "fű", fr: "herbe" },
+      { hu: "öntözőkanna", fr: "arrosoir" },
+      { hu: "ásó", fr: "bêche" },
+      { hu: "gereblye", fr: "râteau" },
+      { hu: "mag", fr: "graine" },
+      { hu: "komposzt", fr: "compost" },
+      { hu: "kerítés", fr: "clôture" },
+      { hu: "bokor", fr: "buisson" },
+      { hu: "gyom", fr: "mauvaise herbe" },
+    ]
+  },
+  outils: {
+    icon: "🔨",
+    label: "Outils",
+    words: [
+      { hu: "kalapács", fr: "marteau" },
+      { hu: "csavarhúzó", fr: "tournevis" },
+      { hu: "fűrész", fr: "scie" },
+      { hu: "fogó", fr: "pince" },
+      { hu: "szög", fr: "clou" },
+      { hu: "csavar", fr: "vis" },
+      { hu: "fúró", fr: "perceuse" },
+      { hu: "mérőszalag", fr: "mètre ruban" },
+      { hu: "szint", fr: "niveau à bulle" },
+      { hu: "kulcs", fr: "clé" },
+      { hu: "szikra", fr: "étincelle" },
+      { hu: "szerszámosláda", fr: "boîte à outils" },
+    ]
+  },
+  cuisine: {
+    icon: "🍳",
+    label: "Cuisine",
+    words: [
+      { hu: "serpenyő", fr: "poêle" },
+      { hu: "edény", fr: "casserole" },
+      { hu: "kés", fr: "couteau" },
+      { hu: "villa", fr: "fourchette" },
+      { hu: "kanál", fr: "cuillère" },
+      { hu: "tányér", fr: "assiette" },
+      { hu: "pohár", fr: "verre" },
+      { hu: "hűtőszekrény", fr: "réfrigérateur" },
+      { hu: "sütő", fr: "four" },
+      { hu: "vágódeszka", fr: "planche à découper" },
+      { hu: "szűrő", fr: "passoire" },
+      { hu: "mikróhullámú", fr: "micro-ondes" },
+    ]
+  },
+  transport: {
+    icon: "🚗",
+    label: "Transport",
+    words: [
+      { hu: "autó", fr: "voiture" },
+      { hu: "busz", fr: "bus" },
+      { hu: "vonat", fr: "train" },
+      { hu: "repülő", fr: "avion" },
+      { hu: "bicikli", fr: "vélo" },
+      { hu: "taxi", fr: "taxi" },
+      { hu: "metró", fr: "métro" },
+      { hu: "hajó", fr: "bateau" },
+      { hu: "állomás", fr: "gare" },
+      { hu: "repülőtér", fr: "aéroport" },
+      { hu: "jegy", fr: "billet" },
+      { hu: "út", fr: "route" },
+    ]
+  },
+  corps: {
+    icon: "🧍",
+    label: "Corps humain",
+    words: [
+      { hu: "fej", fr: "tête" },
+      { hu: "kéz", fr: "main" },
+      { hu: "láb", fr: "pied" },
+      { hu: "szem", fr: "œil" },
+      { hu: "száj", fr: "bouche" },
+      { hu: "fül", fr: "oreille" },
+      { hu: "orr", fr: "nez" },
+      { hu: "has", fr: "ventre" },
+      { hu: "hát", fr: "dos" },
+      { hu: "ujj", fr: "doigt" },
+      { hu: "váll", fr: "épaule" },
+      { hu: "térd", fr: "genou" },
+    ]
+  },
+  nature: {
+    icon: "🌲",
+    label: "Nature",
+    words: [
+      { hu: "hegy", fr: "montagne" },
+      { hu: "folyó", fr: "rivière" },
+      { hu: "tó", fr: "lac" },
+      { hu: "erdő", fr: "forêt" },
+      { hu: "eső", fr: "pluie" },
+      { hu: "nap", fr: "soleil" },
+      { hu: "hold", fr: "lune" },
+      { hu: "szél", fr: "vent" },
+      { hu: "hó", fr: "neige" },
+      { hu: "tenger", fr: "mer" },
+      { hu: "sziget", fr: "île" },
+      { hu: "felhő", fr: "nuage" },
+    ]
+  },
+  animaux: {
+    icon: "🐾",
+    label: "Animaux",
+    words: [
+      { hu: "kutya", fr: "chien" },
+      { hu: "macska", fr: "chat" },
+      { hu: "ló", fr: "cheval" },
+      { hu: "tehén", fr: "vache" },
+      { hu: "tyúk", fr: "poule" },
+      { hu: "disznó", fr: "cochon" },
+      { hu: "madár", fr: "oiseau" },
+      { hu: "hal", fr: "poisson" },
+      { hu: "nyúl", fr: "lapin" },
+      { hu: "medve", fr: "ours" },
+      { hu: "farkas", fr: "loup" },
+      { hu: "oroszlán", fr: "lion" },
+    ]
+  }
+};
+
+let session = [];
+let current = 0;
+let correct = 0;
+let wrong = 0;
+let flipped = false;
+let answered = false;
+let sessionCategory = "";
+
+function buildCategoryGrid() {
+  const grid = document.getElementById("category-grid");
+  Object.entries(VOCAB).forEach(([key, cat]) => {
+    const btn = document.createElement("button");
+    btn.className = "cat-btn";
+    btn.innerHTML = `<span class="cat-icon">${cat.icon}</span><div class="cat-name">${cat.label}</div><div class="cat-count">${cat.words.length} mots</div>`;
+    btn.onclick = () => startSession(key);
+    grid.appendChild(btn);
+  });
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function startSession(catKey) {
+  sessionCategory = catKey;
+  if (catKey === "all") {
+    session = shuffle(Object.values(VOCAB).flatMap(c => c.words));
+  } else {
+    session = shuffle(VOCAB[catKey].words);
+  }
+  current = 0; correct = 0; wrong = 0;
+  showScreen("card");
+  loadCard();
+}
+
+function loadCard() {
+  flipped = false;
+  answered = false;
+  const card = session[current];
+  document.getElementById("card-hu").textContent = card.hu;
+  document.getElementById("card-fr").textContent = card.fr;
+  document.getElementById("card-inner").classList.remove("flipped");
+  document.getElementById("answer-btns").classList.add("hidden");
+  document.getElementById("tap-hint").style.opacity = "1";
+  document.getElementById("btn-next").disabled = true;
+
+  const total = session.length;
+  document.getElementById("progress-label").textContent = `Carte ${current + 1} / ${total}`;
+  document.getElementById("score-label").textContent = `✅ ${correct}  ❌ ${wrong}`;
+  document.getElementById("progress-bar").style.width = `${(current / total) * 100}%`;
+
+  const catLabel = sessionCategory === "all" ? "Tout" : VOCAB[sessionCategory].label;
+  document.getElementById("session-category-badge").textContent = catLabel;
+}
+
+function flipCard() {
+  if (answered) return;
+  flipped = !flipped;
+  document.getElementById("card-inner").classList.toggle("flipped", flipped);
+  if (flipped) {
+    document.getElementById("answer-btns").classList.remove("hidden");
+    document.getElementById("tap-hint").style.opacity = "0";
+  } else {
+    document.getElementById("answer-btns").classList.add("hidden");
+    document.getElementById("tap-hint").style.opacity = "1";
+  }
+}
+
+function answer(isCorrect) {
+  answered = true;
+  if (isCorrect) correct++; else wrong++;
+  document.getElementById("answer-btns").classList.add("hidden");
+  document.getElementById("btn-next").disabled = false;
+  document.getElementById("score-label").textContent = `✅ ${correct}  ❌ ${wrong}`;
+}
+
+function nextCard() {
+  current++;
+  if (current >= session.length) {
+    showResult();
+  } else {
+    loadCard();
+  }
+}
+
+function showResult() {
+  showScreen("result");
+  const total = session.length;
+  const pct = Math.round((correct / total) * 100);
+  document.getElementById("result-score").textContent = `${correct}/${total}`;
+  let emoji = "😅", title = "Continuez vos efforts !";
+  if (pct >= 90) { emoji = "🏆"; title = "Excellent !"; }
+  else if (pct >= 70) { emoji = "🎉"; title = "Très bien !"; }
+  else if (pct >= 50) { emoji = "👍"; title = "Pas mal !"; }
+  document.getElementById("result-emoji").textContent = emoji;
+  document.getElementById("result-title").textContent = title;
+  document.getElementById("result-sub").textContent = `${pct}% de bonnes réponses`;
+}
+
+function retrySession() {
+  startSession(sessionCategory);
+}
+
+function goHome() {
+  showScreen("categories");
+}
+
+function showScreen(name) {
+  document.getElementById("screen-categories").classList.add("hidden");
+  document.getElementById("screen-card").classList.add("hidden");
+  document.getElementById("screen-result").classList.add("hidden");
+  document.getElementById("screen-" + name).classList.remove("hidden");
+}
+
+buildCategoryGrid();
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js").catch(() => {});
+}
+</script>
+</body>
+</html>
