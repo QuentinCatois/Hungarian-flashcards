@@ -1,0 +1,24 @@
+{
+  "name": "Magyar Szavak – Hongrois-Français",
+  "short_name": "Magyar Szavak",
+  "description": "Apprenez le vocabulaire hongrois avec des fiches",
+  "start_url": "/hungarian-flashcards/",
+  "display": "standalone",
+  "background_color": "#f8f7ff",
+  "theme_color": "#4f46e5",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
