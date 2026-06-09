@@ -2,7 +2,7 @@
   "name": "Magyar Szavak – Hongrois-Français",
   "short_name": "Magyar Szavak",
   "description": "Apprenez le vocabulaire hongrois avec des fiches",
-  "start_url": "quentincatois.github.io/Hungarian-flashcards/",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#f8f7ff",
   "theme_color": "#4f46e5",
