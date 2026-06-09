@@ -1,8 +1,8 @@
 const CACHE = "magyar-szavak-v1";
 const ASSETS = [
-  "./",
-  "./index.html",
-  "./manifest.json"
+  "/Hungarian-flashcards/",
+  "/Hungarian-flashcards/index.html",
+  "/Hungarian-flashcards/manifest.json"
 ];
 
 self.addEventListener("install", e => {
